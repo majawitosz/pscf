@@ -1,9 +1,11 @@
 "use client";
-import React from "react";
-// import Chart from "react-apexcharts";
+import React, { useEffect, useState } from "react";
+
 import { ApexOptions } from "apexcharts";
 import ChartTab from "../common/ChartTab";
 import dynamic from "next/dynamic";
+import { fetchTemp } from "@/utils/api";
+import {TempData} from "@/types";
 
 // Dynamically import the ReactApexChart component
 const ReactApexChart = dynamic(() => import("react-apexcharts"), {
@@ -11,6 +13,74 @@ const ReactApexChart = dynamic(() => import("react-apexcharts"), {
 });
 
 export default function StatisticsChart() {
+  const [series, setSeries] = useState([
+      {
+        name: "Temperature (°C)",
+        data: [] as number[],
+      },
+    ]);
+  
+
+    const [categories, setCategories] = useState<string[]>([]);
+    const [scale, setScale] = useState<"hours" | "days" | "months">("hours");
+
+const formatTimestamp = (timestamp: number, scale: "hours" | "days" | "months") => {
+  const date = new Date(timestamp); 
+  switch (scale) {
+    case "hours":
+      return date.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false, 
+      }); 
+    case "days":
+      return date.toLocaleDateString([], {
+        day: "2-digit",
+        month: "short",
+      });
+    case "months":
+      return date.toLocaleDateString([], {
+        month: "short",
+        year: "numeric",
+      }); 
+    default:
+      return date.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }); 
+  }
+};
+  
+    useEffect(() => {
+      const loadData = async () => {
+        try {
+          const data: TempData = await fetchTemp(scale);
+          setSeries((prevSeries) => [
+            {
+              name: "Temperature (°C)",
+              data: [...prevSeries[0].data, data.temperature],
+            },
+          ]);
+          const timestamp = data.timestamp * 1000; 
+          setCategories((prevCategories) => [
+            ...prevCategories,
+            formatTimestamp(timestamp, scale),
+          ]);
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
+      };
+      loadData();
+      
+    }, [scale]);
+
+    const handleScaleChange = (newScale: "hours" | "days" | "months") => {
+    setScale(newScale);
+    setCategories([]);
+    setSeries([{ name: "Temperature (°C)", data: [] }]);
+  };
+
   const options: ApexOptions = {
     legend: {
       show: false, // Hide legend
@@ -61,28 +131,15 @@ export default function StatisticsChart() {
     dataLabels: {
       enabled: false, // Disable data labels
     },
-    tooltip: {
-      enabled: true, // Enable tooltip
+tooltip: {
+      enabled: true,
       x: {
-        format: "dd MMM yyyy", // Format for x-axis tooltip
+        format: scale === "hours" ? "HH:mm" : scale === "days" ? "dd MMM" : "MMM yyyy",
       },
     },
     xaxis: {
       type: "category", // Category-based x-axis
-      categories: [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ],
+      categories: categories,
       axisBorder: {
         show: false, // Hide x-axis border
       },
@@ -99,39 +156,31 @@ export default function StatisticsChart() {
           fontSize: "12px", // Adjust font size for y-axis labels
           colors: ["#6B7280"], // Color of the labels
         },
+        formatter: (value: number) => `${value}°C`,
       },
       title: {
         text: "", // Remove y-axis title
         style: {
-          fontSize: "0px",
+          fontSize: "",
         },
       },
     },
   };
 
-  const series = [
-    {
-      name: "Sales",
-      data: [180, 190, 170, 160, 175, 165, 170, 205, 230, 210, 240, 235],
-    },
-    {
-      name: "Revenue",
-      data: [40, 30, 50, 40, 55, 40, 70, 100, 110, 120, 150, 140],
-    },
-  ];
+ 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white px-5 pb-5 pt-5 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6 sm:pt-6">
       <div className="flex flex-col gap-5 mb-6 sm:flex-row sm:justify-between">
         <div className="w-full">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-            Statistics
+            Temperature
           </h3>
-          <p className="mt-1 text-gray-500 text-theme-sm dark:text-gray-400">
+          {/* <p className="mt-1 text-gray-500 text-theme-sm dark:text-gray-400">
             Target you’ve set for each month
-          </p>
+          </p> */}
         </div>
         <div className="flex items-start w-full gap-3 sm:justify-end">
-          <ChartTab />
+          <ChartTab onScaleChange={handleScaleChange} />
         </div>
       </div>
 

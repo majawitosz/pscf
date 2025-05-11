@@ -2,6 +2,7 @@
 import React from "react";
 import Badge from "../ui/badge/Badge";
 import { ArrowDownIcon, ArrowUpIcon, BoxIconLine, GroupIcon } from "@/icons";
+import {MoonOutline} from "heroicons-react";
 
 export const EcommerceMetrics = () => {
   return (
@@ -15,15 +16,15 @@ export const EcommerceMetrics = () => {
         <div className="flex items-end justify-between mt-5">
           <div>
             <span className="text-sm text-gray-500 dark:text-gray-400">
-              Customers
+              Living room
             </span>
             <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-              3,782
+              21 °C
             </h4>
           </div>
           <Badge color="success">
             <ArrowUpIcon />
-            11.01%
+            1 °C
           </Badge>
         </div>
       </div>
@@ -37,16 +38,16 @@ export const EcommerceMetrics = () => {
         <div className="flex items-end justify-between mt-5">
           <div>
             <span className="text-sm text-gray-500 dark:text-gray-400">
-              Orders
+              Bedroom
             </span>
             <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-              5,359
+              19 °C
             </h4>
           </div>
 
           <Badge color="error">
             <ArrowDownIcon className="text-error-500" />
-            9.05%
+            1 °C
           </Badge>
         </div>
       </div>

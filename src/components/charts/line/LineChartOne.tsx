@@ -1,15 +1,59 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import { ApexOptions } from "apexcharts";
+import { fetchTemp } from "@/utils/api";
+import {TempData} from "@/types";
+//import ReactApexChart from "react-apexcharts";
 
 import dynamic from "next/dynamic";
-// Dynamically import the ReactApexChart component
+
 const ReactApexChart = dynamic(() => import("react-apexcharts"), {
   ssr: false,
 });
 
+
 export default function LineChartOne() {
+
+  const [series, setSeries] = useState([
+    {
+      name: "Temperature (°C)",
+      data: [] as number[],
+    },
+  ]);
+
+  // Stan do przechowywania kategorii osi X (daty/czas)
+  const [categories, setCategories] = useState<string[]>([]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const data: TempData = await fetchTemp();
+        // Aktualizacja serii danych
+        setSeries((prevSeries) => [
+          {
+            name: "Temperature (°C)",
+            data: [...prevSeries[0].data, data.temperature],
+          },
+        ]);
+        // Aktualizacja kategorii osi X (formatowanie timestamp)
+        setCategories((prevCategories) => [
+          ...prevCategories,
+          new Date(data.timestamp).toLocaleTimeString(), // Format: HH:MM:SS
+        ]);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    // Pobierz dane przy pierwszym renderowaniu
+    loadData();
+
+    // Opcjonalnie: cykliczne pobieranie danych co np. 10 sekund
+    const interval = setInterval(loadData, 10000); // 10 sekund
+    return () => clearInterval(interval); // Czyszczenie interwału przy odmontowaniu
+  }, []);
+  
   const options: ApexOptions = {
     legend: {
       show: false, // Hide legend
@@ -108,16 +152,6 @@ export default function LineChartOne() {
     },
   };
 
-  const series = [
-    {
-      name: "Sales",
-      data: [180, 190, 170, 160, 175, 165, 170, 205, 230, 210, 240, 235],
-    },
-    {
-      name: "Revenue",
-      data: [40, 30, 50, 40, 55, 40, 70, 100, 110, 120, 150, 140],
-    },
-  ];
   return (
     <div className="max-w-full overflow-x-auto custom-scrollbar">
       <div id="chartEight" className="min-w-[1000px]">
