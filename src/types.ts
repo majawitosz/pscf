@@ -1,5 +1,10 @@
-export interface TempData {
-  temperature: number;
-  unit: string;
+
+
+
+export interface DataPoint {
   timestamp: number;
+  average: number;
 }
+
+
+

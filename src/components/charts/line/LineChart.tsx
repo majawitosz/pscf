@@ -2,43 +2,67 @@
 import React, { useEffect, useState } from "react";
 
 import { ApexOptions } from "apexcharts";
-import ChartTab from "../common/ChartTab";
+import ChartTab from "../../common/ChartTab";
 import dynamic from "next/dynamic";
 import { fetchTemp } from "@/utils/api";
-import {TempData} from "@/types";
+import { DataPoint} from "@/types";
 
 // Dynamically import the ReactApexChart component
 const ReactApexChart = dynamic(() => import("react-apexcharts"), {
   ssr: false,
 });
 
-export default function StatisticsChart() {
+interface LineChartProps {
+  sensorType: "temperature" | "humidity" | "pressure" | "co2" | "iaq";
+  room: "room1" | "room2" | "room3" | "room4" ;
+  limit: number;
+}
+type NameValue = "Temperature (°C)" | "Humidity (%)" | "Pressure (hPa)" | "CO2 (ppm)" | "IAQ (IAQ)" | ""
+
+export default function LineChart({ sensorType, room,  limit}: LineChartProps) {
+  const name: NameValue = 
+  sensorType === "temperature" ? "Temperature (°C)" : 
+  sensorType === "humidity" ? "Humidity (%)" : 
+  sensorType === "pressure" ? "Pressure (hPa)" : 
+  sensorType === "co2" ? "CO2 (ppm)" : 
+  sensorType === "iaq" ? "IAQ (IAQ)" : "";
+
+  const unit: string =
+  sensorType === "temperature"
+    ? "°C"
+    : sensorType === "humidity"
+    ? "%"
+    : sensorType === "pressure"
+    ? "hPa"
+    : sensorType === "co2"
+    ? "ppm"
+    : sensorType === "iaq"
+    ? "IAQ"
+    : "";
   const [series, setSeries] = useState([
       {
-        name: "Temperature (°C)",
+        name,
         data: [] as number[],
       },
     ]);
-  
-
     const [categories, setCategories] = useState<string[]>([]);
-    const [scale, setScale] = useState<"hours" | "days" | "months">("hours");
+    const [scale, setScale] = useState<"hour" | "day" | "month">("hour");
 
-const formatTimestamp = (timestamp: number, scale: "hours" | "days" | "months") => {
+const formatTimestamp = (timestamp: number, scale: "hour" | "day" | "month") => {
   const date = new Date(timestamp); 
   switch (scale) {
-    case "hours":
+    case "hour":
       return date.toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
         hour12: false, 
       }); 
-    case "days":
+    case "day":
       return date.toLocaleDateString([], {
         day: "2-digit",
         month: "short",
       });
-    case "months":
+    case "month":
       return date.toLocaleDateString([], {
         month: "short",
         year: "numeric",
@@ -52,33 +76,33 @@ const formatTimestamp = (timestamp: number, scale: "hours" | "days" | "months") 
   }
 };
   
-    useEffect(() => {
-      const loadData = async () => {
-        try {
-          const data: TempData = await fetchTemp(scale);
-          setSeries((prevSeries) => [
-            {
-              name: "Temperature (°C)",
-              data: [...prevSeries[0].data, data.temperature],
-            },
-          ]);
-          const timestamp = data.timestamp * 1000; 
-          setCategories((prevCategories) => [
-            ...prevCategories,
-            formatTimestamp(timestamp, scale),
-          ]);
-        } catch (error) {
-          console.error("Error fetching data:", error);
-        }
-      };
-      loadData();
-      
-    }, [scale]);
+useEffect(() => {
+    const loadData = async () => {
+      try {
+        const data: DataPoint[] = await fetchTemp({sensorType, room, scale, limit}); 
+        console.log("Fetched data:", data);
 
-    const handleScaleChange = (newScale: "hours" | "days" | "months") => {
+        const values = data.map((item) => item.average);
+        const timestamps = data.map((item) => formatTimestamp(item.timestamp *1000, scale));
+        console.log("Formatted timestamps:", timestamps);
+        setSeries([
+          {
+            name,
+            data: values,
+          },
+        ]);
+        setCategories(timestamps);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    loadData();
+  }, [scale]);
+
+    const handleScaleChange = (newScale: "hour" | "day" | "month") => {
     setScale(newScale);
     setCategories([]);
-    setSeries([{ name: "Temperature (°C)", data: [] }]);
+    setSeries([{ name, data: [] }]);
   };
 
   const options: ApexOptions = {
@@ -134,7 +158,7 @@ const formatTimestamp = (timestamp: number, scale: "hours" | "days" | "months") 
 tooltip: {
       enabled: true,
       x: {
-        format: scale === "hours" ? "HH:mm" : scale === "days" ? "dd MMM" : "MMM yyyy",
+        format: scale === "hour" ? "HH:mm" : scale === "day" ? "dd MMM" : "MMM yyyy",
       },
     },
     xaxis: {
@@ -156,7 +180,7 @@ tooltip: {
           fontSize: "12px", // Adjust font size for y-axis labels
           colors: ["#6B7280"], // Color of the labels
         },
-        formatter: (value: number) => `${value}°C`,
+        formatter: (value: number) => `${value} ${unit}`,
       },
       title: {
         text: "", // Remove y-axis title
@@ -173,7 +197,7 @@ tooltip: {
       <div className="flex flex-col gap-5 mb-6 sm:flex-row sm:justify-between">
         <div className="w-full">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-            Temperature
+            {name}
           </h3>
           {/* <p className="mt-1 text-gray-500 text-theme-sm dark:text-gray-400">
             Target you’ve set for each month

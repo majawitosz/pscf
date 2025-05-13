@@ -5,13 +5,14 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
 import {
-  CalenderIcon,
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
   PieChartIcon,
-  UserCircleIcon,
+  House
+  
 } from "../icons/index";
+
 
 
 type NavItem = {
@@ -29,17 +30,18 @@ const navItems: NavItem[] = [
    
   },
   {
-    icon: <PieChartIcon />,
+    icon: <House />,
     name: "Charts",
     subItems: [
-      { name: "Temperature Chart", path: "/line-chart", pro: false },
-      { name: "Bar Chart", path: "/bar-chart", pro: false },
+      { name: "Living Room", path: "/living-room", pro: false },
+      { name: "Bedroom", path: "/bedroom", pro: false },
+      { name: "Kitchen", path: "/kitchen", pro: false },
+      { name: "Bathroom", path: "/bathroom", pro: false },
     ],
   },
  
 
 ];
-
 
 
 const AppSidebar: React.FC = () => {

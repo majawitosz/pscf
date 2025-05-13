@@ -2,7 +2,7 @@
 import React from "react";
 import Badge from "../ui/badge/Badge";
 import { ArrowDownIcon, ArrowUpIcon, BoxIconLine, GroupIcon } from "@/icons";
-import {MoonOutline} from "heroicons-react";
+
 
 export const EcommerceMetrics = () => {
   return (

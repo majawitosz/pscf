@@ -1,0 +1,25 @@
+
+
+import PageBreadcrumb from "@/components/common/PageBreadCrumb";
+import LineChart  from "@/components/charts/line/LineChart";
+import { Metadata } from "next";
+import React from "react";
+
+export const metadata: Metadata = {
+  title: "Temperature Chart | Dashboard",
+ 
+};
+export default function Page() {
+  return (
+    <div className="space-y-6">
+      <PageBreadcrumb pageTitle="Living Room Charts" />
+      <div className="space-y-6">
+        <LineChart sensorType={"temperature"} room={"room1"} limit={15} />
+      </div>
+       
+      <div className=" space-y-6">
+        <LineChart sensorType={"pressure"} room={"room1"} limit={15} />
+      </div>
+    </div>
+  );
+}
