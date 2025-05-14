@@ -52,6 +52,8 @@ import ChatIcon from "./chat.svg";
 import MoreDotIcon from "./more-dot.svg";
 import BellIcon from "./bell.svg";
 import House from "./house.svg";
+import Temperature from "./temperature.svg";
+import Fan from "./fan.svg";
 
 export {
   DownloadIcon,
@@ -107,5 +109,7 @@ export {
   HorizontaLDots,
   ChevronUpIcon,
   ChatIcon,
-  House
+  House,
+  Temperature,
+  Fan
 };

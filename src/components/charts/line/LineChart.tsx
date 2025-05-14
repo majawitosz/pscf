@@ -5,22 +5,17 @@ import { ApexOptions } from "apexcharts";
 import ChartTab from "../../common/ChartTab";
 import dynamic from "next/dynamic";
 import { fetchTemp } from "@/utils/api";
-import { DataPoint} from "@/types";
+import { DataPoint, LineChartProps, ValueTypeHeader} from "@/types";
 
 // Dynamically import the ReactApexChart component
 const ReactApexChart = dynamic(() => import("react-apexcharts"), {
   ssr: false,
 });
 
-interface LineChartProps {
-  sensorType: "temperature" | "humidity" | "pressure" | "co2" | "iaq";
-  room: "room1" | "room2" | "room3" | "room4" ;
-  limit: number;
-}
-type NameValue = "Temperature (°C)" | "Humidity (%)" | "Pressure (hPa)" | "CO2 (ppm)" | "IAQ (IAQ)" | ""
+
 
 export default function LineChart({ sensorType, room,  limit}: LineChartProps) {
-  const name: NameValue = 
+  const name: ValueTypeHeader = 
   sensorType === "temperature" ? "Temperature (°C)" : 
   sensorType === "humidity" ? "Humidity (%)" : 
   sensorType === "pressure" ? "Pressure (hPa)" : 
@@ -79,7 +74,7 @@ const formatTimestamp = (timestamp: number, scale: "hour" | "day" | "month") => 
 useEffect(() => {
     const loadData = async () => {
       try {
-        const data: DataPoint[] = await fetchTemp({sensorType, room, scale, limit}); 
+        const data: DataPoint[]  = await fetchTemp({sensorType, room, scale, limit}); 
         console.log("Fetched data:", data);
 
         const values = data.map((item) => item.average);
