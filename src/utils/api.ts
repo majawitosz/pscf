@@ -1,8 +1,7 @@
 
 import {DataPoint, AirQResponse, fetchTempParams} from "@/types";
 
-const API_URL = "https://pogodynka.jessicapawlowskaonly.fans"; 
-
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 
 export async function fetchTemp({sensorType, room, scale, limit}: fetchTempParams): Promise<DataPoint[] > {

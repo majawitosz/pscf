@@ -38,7 +38,6 @@ export const AirQComponent = async () => {
              OK
           </Badge>
            ) : (<Badge color="error">
-           
              BAD
           </Badge>)}
           
